@@ -15,20 +15,20 @@
 
         <Button
             android:id="@+id/repeat_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="317dp"
+            android:layout_height="238dp"
             android:text="Repeat" />
 
         <Button
             android:id="@+id/next_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="313dp"
+            android:layout_height="245dp"
             android:text="Next" />
 
         <TextView
             android:id="@+id/text_box"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="306dp"
+            android:layout_height="121dp"
             android:text="Placeholder Text" />
 
     </LinearLayout>
