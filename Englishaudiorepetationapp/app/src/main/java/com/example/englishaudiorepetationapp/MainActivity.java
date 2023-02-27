@@ -1,8 +1,12 @@
 package com.example.englishaudiorepetationapp;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -23,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LAST_FILE_NAME = Environment.getExternalStorageDirectory().getAbsolutePath() + "/last_file.txt";
@@ -51,16 +56,32 @@ public class MainActivity extends AppCompatActivity {
         nextButton = findViewById(R.id.next_button);
         textBox = findViewById(R.id.text_box);
 
-//         Read the current number from the last_file.txt file
-        File file = new File(LAST_FILE_NAME);
-        if (file.exists()) {
+        // First, create the file object for the file you want to save
+        File text_file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "last_file.txt");
+
+        // Next, create the ContentValues object with the metadata for the file
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, "last_file.txt");
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+        // Now, get the ContentResolver and insert the file into the MediaStore
+        ContentResolver resolver = getContentResolver();
+        Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+
+        // Read the current number from the text file
+//        int x = read_from_text_file(text_file, uri, resolver);
+        int x = 1;
+        currentNumber = x;
+
+        if (text_file.exists()) {
             Log.d("MainActivity", "---------------- Text File is exists");
             try {
-                FileInputStream inputStream = new FileInputStream(file);
+                FileInputStream inputStream = new FileInputStream(String.valueOf(uri));
                 byte[] buffer = new byte[1024];
                 int read = inputStream.read(buffer);
                 String contents = new String(buffer, 0, read);
-                currentNumber = Integer.parseInt(contents);
+                int currentNumber = Integer.parseInt(contents);
                 Log.d("MainActivity", "---------------- currentNumber: " + currentNumber);
                 inputStream.close();
             } catch (IOException e) {
@@ -70,13 +91,17 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.d("MainActivity", "---------------- Text File is NOT exists");
             try {
-                FileOutputStream outputStream = new FileOutputStream(file);
-                outputStream.write(String.valueOf(currentNumber).getBytes());
+                OutputStream outputStream = resolver.openOutputStream(uri);
+                outputStream.write(String.valueOf(1).getBytes());
                 outputStream.close();
+                Log.d("MainActivity", "---------------- Successfully wrote '1' to the text file: ");
             } catch (IOException e) {
                 Log.d("MainActivity", "---------------- Failed to write '1' to the text file: " + e);
+                e.printStackTrace();
             }
         }
+
+
 
         repeatButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,13 +118,13 @@ public class MainActivity extends AppCompatActivity {
 
                 // Save the current number to last_file.txt
                 try {
-                    FileOutputStream outputStream = new FileOutputStream(file);
+                    FileOutputStream outputStream = new FileOutputStream(text_file);
                     outputStream.write(String.valueOf(currentNumber).getBytes());
                     outputStream.close();
                     Log.d("MainActivity", "---------------- Succussfully wrote the currentNumber (" + currentNumber + ") to the text file");
                 } catch (IOException e) {
                     e.printStackTrace();
-                    if (file.exists()) {
+                    if (text_file.exists()) {
                         Log.d("MainActivity", "---------------- The text file is exists");
                     } else {
                         Log.d("MainActivity", "---------------- The text file is NOT exists");
